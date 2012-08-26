@@ -1,10 +1,24 @@
+#!/usr/bin/python
+#
+#This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/us/ or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+#
+# (CC) BY SA - Robert Starmer, Cisco Systems, Inc. August, 2012
+# 
+# References:
+# WSGI: http://library.linode.com/web-servers/apache/mod-wsgi/fedora-14
+# MYSQL: http://www.kitebird.com/articles/pydbapi.html
+#
+# Useage Example:
+# curl -d hostname=01-e3-alpha -d macaddr=00:01:DE:AD:BE:AF -d model=nexus3064  http://192.168.25.24/cisco
+# Should return:
+# ConfigFile: 01-e3-alpha.cfg
+# MD5File: 01-e3-alpha.md5
+#
 import os
 import MySQLdb as mdb
 import sys
 from urlparse import parse_qs, parse_qsl
-#from jinja2 import Environment, PackageLoader
-#env = Environment(loader=PackageLoader('application', 'templates'))
-#from jinja2 import Template
+
 sys.path.append('/opt/cisco')
 
 os.environ['PYTHON_EGG_CACHE'] = '/opt/cisco/.python-egg'
@@ -35,11 +49,15 @@ def application(environ, start_response):
 	mo = d.get('model')[0]
 
 	cur.execute('INSERT INTO cisco(hostname, macaddr, model) VALUES("%s", "%s", "%s")' % (hn,ma,mo))
+	row = cur.rowcount
+
+	cur.close()
+	con.commit()
 	con.close()
 
 	
         start_response('200 OK', [('content-type', 'text/html')])
-	return ['ConfigFile: ', hn, '.cfg\n', 'MD5File: ', hn, '.md5\n']
+	return ['ConfigFile: ', hn, '.cfg\n', 'MD5File: ', hn, '.md5\n', 'Inserted into db: ', str(row), '\n']
 
     else:
         start_response('200 OK', [('content-type', 'text/html')])
