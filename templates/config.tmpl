@@ -1,0 +1,20 @@
+! Config example for Nexus-3064
+
+hostname ${hostname}
+
+vlan 10
+
+int vlan 10
+  ip address ${vl10ip}
+
+int e 1/63
+  ip addr ${ul1ip}
+  no shut
+
+int e 1/64
+  ip addr ${ul2ip}
+  no shut
+
+ip route 0.0.0.0/0 ${nh1ip}
+ip route 0.0.0.0/0 ${nh2ip}
+
